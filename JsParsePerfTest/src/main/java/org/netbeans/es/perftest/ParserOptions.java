@@ -45,10 +45,10 @@ package org.netbeans.es.perftest;
  *
  * @author Tomas Zezula
  */
-public final class Options {
+public final class ParserOptions {
     private final boolean printErrors;
 
-    Options(
+    ParserOptions(
         boolean printErrors) {
         this.printErrors = printErrors;
     }

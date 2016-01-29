@@ -51,7 +51,7 @@ import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.DefaultErrorStrategy;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.atn.PredictionMode;
-import org.netbeans.es.perftest.Options;
+import org.netbeans.es.perftest.ParserOptions;
 import org.netbeans.es.perftest.ParserImplementation;
 import org.netbeans.modules.javascript2.editor.parser6.ECMAScript6Lexer;
 import org.netbeans.modules.javascript2.editor.parser6.ECMAScript6Parser;
@@ -69,7 +69,7 @@ public class AntlrParser implements ParserImplementation {
     }
 
     @Override
-    public void parse(File file, Options options) throws IOException {
+    public void parse(File file, ParserOptions options) throws IOException {
         final ANTLRInputStream in = new ANTLRFileStream(file.getAbsolutePath());
         final ECMAScript6Lexer lexer = new ECMAScript6Lexer(in);
         final CommonTokenStream tokens = new CommonTokenStream(lexer);

@@ -51,7 +51,7 @@ import jdk.nashorn.internal.parser.Parser;
 import jdk.nashorn.internal.runtime.ErrorManager;
 import jdk.nashorn.internal.runtime.ScriptEnvironment;
 import jdk.nashorn.internal.runtime.Source;
-import org.netbeans.es.perftest.Options;
+import org.netbeans.es.perftest.ParserOptions;
 import org.netbeans.es.perftest.ParserImplementation;
 
 /**
@@ -68,7 +68,7 @@ public class NashornParser implements ParserImplementation {
     }
 
     @Override
-    public void parse(File file, Options options) throws IOException {
+    public void parse(File file, ParserOptions options) throws IOException {
         final PrintWriter err = new PrintWriter(new OutputStreamWriter(options.isPrintError() ? System.err : new ByteArrayOutputStream()));
         final ScriptEnvironment env = new ScriptEnvironment(
                 new jdk.nashorn.internal.runtime.options.Options(file.getAbsolutePath()),

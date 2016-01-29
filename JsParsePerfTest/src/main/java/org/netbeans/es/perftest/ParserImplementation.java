@@ -50,5 +50,5 @@ import java.io.IOException;
  */
 public interface ParserImplementation {
     String getName();
-    void parse(File file, Options options) throws IOException;
+    void parse(File file, ParserOptions options) throws IOException;
 }

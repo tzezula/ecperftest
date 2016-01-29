@@ -55,22 +55,25 @@ import java.util.stream.Stream;
 final class TestRunner implements Runnable {
     private final ParserImplementation parser;
     private final File source;
-    private final Options opts;
+    private final ParserOptions opts;
     private final int runs;
+    private final boolean warmUp;
     private final PrintWriter progressWriter;
     private final PrintWriter reportWriter;
 
     private TestRunner(
             final ParserImplementation parser,
             final File source,
-            final Options opts,
+            final ParserOptions opts,
             final int runs,
+            final boolean warmUp,
             final PrintWriter progressWriter,
             final PrintWriter reportWriter) {
         this.parser = parser;
         this.source = source;
         this.opts = opts;
         this.runs = runs;
+        this.warmUp = warmUp;
         this.progressWriter = progressWriter;
         this.reportWriter = reportWriter;
     }
@@ -78,11 +81,15 @@ final class TestRunner implements Runnable {
 
     @Override
     public void run() {
-        progress(progressWriter, "Parsing %s using %s in %d round(s).%n",
-                source.getName(),
-                parser.getName(),
-                runs);
         try {
+            if (warmUp) {
+                progress(progressWriter, "Warm up...%n");
+                files(source).forEach((f)->parse(parser, f, opts));
+            }
+            progress(progressWriter, "Parsing %s using %s in %d round(s).%n",
+                    source.getName(),
+                    parser.getName(),
+                    runs);
             final long[] totalTimes = new long[runs];
             final Map<File,long[]> timesPerFile = new TreeMap<>((f1,f2) -> {
                     int res = f1.getName().compareTo(f2.getName());
@@ -110,7 +117,7 @@ final class TestRunner implements Runnable {
                         })
                         .reduce(0L, (a,b)->{return a + b;});
             }
-            reportHeader(reportWriter, source);
+            reportHeader(reportWriter, parser, source);
             timesPerFile.entrySet().stream().forEach((e) -> {
                 report(reportWriter, e.getKey().getName(), e.getValue());
             });
@@ -131,9 +138,11 @@ final class TestRunner implements Runnable {
 
     private static void reportHeader(
         final PrintWriter w,
+        final ParserImplementation parser,
         final File source) {
         w.println("########################################");
         w.printf("Executed: %s%n", new Date());
+        w.printf("Parser: %s%n", parser.getName());
         w.printf(source.isDirectory() ?
             "Tested files in directory: %s%n" :
             "Tested file: %s%n",
@@ -147,9 +156,12 @@ final class TestRunner implements Runnable {
             final String message,
             final long[] times) {
         w.printf("%s:",message);           //NOI18N
+        long total = 0L;
         for (int i=0; i< times.length; i++) {
+            total+=times[i];
             w.printf(" %d : %dms", 1+i, times[i]); //NOI18N
         }
+        w.printf("\t\t\tAvg : %dms",(total/times.length));
         w.println();
         w.flush();
     }
@@ -157,7 +169,7 @@ final class TestRunner implements Runnable {
     private static long parse (
         final ParserImplementation parser,
         final File file,
-        final Options opts) {
+        final ParserOptions opts) {
         long st = System.currentTimeMillis();
         try {
             parser.parse(file, opts);
@@ -183,8 +195,9 @@ final class TestRunner implements Runnable {
     static final class Builder {
         private final ParserImplementation parser;
         private final File source;
-        private Options options = new Options(false);
+        private ParserOptions options = new ParserOptions(false);
         private int runs = 1;
+        private boolean warmUp;
         private PrintWriter progressWriter = new PrintWriter(new OutputStreamWriter(System.out));
         private PrintWriter reportWriter = progressWriter;
 
@@ -200,7 +213,12 @@ final class TestRunner implements Runnable {
             return this;
         }
 
-        Builder setOptions(Options options) {
+        Builder setWarmUp(boolean warmUp) {
+            this.warmUp = warmUp;
+            return this;
+        }
+
+        Builder setOptions(ParserOptions options) {
             options.getClass();
             this.options = options;
             return this;
@@ -224,6 +242,7 @@ final class TestRunner implements Runnable {
                     source,
                     options,
                     runs,
+                    warmUp,
                     progressWriter,
                     reportWriter);
         }
