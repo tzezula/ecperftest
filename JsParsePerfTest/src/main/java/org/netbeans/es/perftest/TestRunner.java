@@ -42,10 +42,12 @@
 package org.netbeans.es.perftest;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.file.Files;
+import java.util.Date;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Stream;
@@ -108,6 +110,7 @@ final class TestRunner implements Runnable {
                         })
                         .reduce(0L, (a,b)->{return a + b;});
             }
+            reportHeader(reportWriter, source);
             timesPerFile.entrySet().stream().forEach((e) -> {
                 report(reportWriter, e.getKey().getName(), e.getValue());
             });
@@ -123,6 +126,19 @@ final class TestRunner implements Runnable {
         final String message,
         final Object... args) {
         w.printf(message, args);
+        w.flush();
+    }
+
+    private static void reportHeader(
+        final PrintWriter w,
+        final File source) {
+        w.println("########################################");
+        w.printf("Executed: %s%n", new Date());
+        w.printf(source.isDirectory() ?
+            "Tested files in directory: %s%n" :
+            "Tested file: %s%n",
+                source.getName());
+        w.println("########################################");
         w.flush();
     }
 
@@ -187,6 +203,18 @@ final class TestRunner implements Runnable {
         Builder setOptions(Options options) {
             options.getClass();
             this.options = options;
+            return this;
+        }
+
+        Builder setProgress(File file) throws IOException {
+            file.getClass();
+            this.progressWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file, true)));
+            return this;
+        }
+
+        Builder setReport(File file) throws IOException {
+            file.getClass();
+            this.reportWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file, true)));
             return this;
         }
 

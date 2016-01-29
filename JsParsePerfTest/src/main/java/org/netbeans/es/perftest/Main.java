@@ -42,6 +42,7 @@
 package org.netbeans.es.perftest;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ServiceLoader;
 import org.netbeans.es.perftest.antlr.AntlrParser;
 
@@ -50,10 +51,12 @@ import org.netbeans.es.perftest.antlr.AntlrParser;
  * @author Tomas Zezula
  */
 public class Main {
-    public static void main(final String...args) {
+    public static void main(final String...args) throws IOException {
         boolean printErrors = false;
         ParserImplementation parser = null;
         File source = null;
+        File report = null;
+        File progress = null;
         Integer runs = null;
         try {
             for (int i=0; i< args.length; i++) {
@@ -65,6 +68,24 @@ public class Main {
                     case "-p": {    //NOI18N
                         final String parserName = (++i < args.length) ? args[i] : null;
                         parser = parserName == null ? null : findParser(parserName);
+                        break;
+                    }
+                    case "-r": {    //NOI18N
+                        final String fileName = (++i < args.length) ? args[i] : null;
+                        final File f = fileName == null ? null : new File (fileName);
+                        if (f == null) {
+                            throw new  IllegalArgumentException("-r");
+                        }
+                        report = f;
+                        break;
+                    }
+                    case "-l": {    //NOI18N
+                        final String fileName = (++i < args.length) ? args[i] : null;
+                        final File f = fileName == null ? null : new File(fileName);
+                        if (f == null) {
+                            throw new IllegalArgumentException("-l");
+                        }
+                        progress = f;
                         break;
                     }
                     default:
@@ -86,10 +107,16 @@ public class Main {
         } catch (RuntimeException re) {
             usage();
         }
-        TestRunner.Builder.newInstance(parser, source)
+        TestRunner.Builder builder = TestRunner.Builder.newInstance(parser, source)
                 .setOptions(new Options(printErrors))
-                .setRunsCount(runs == null ? 1 : runs)
-                .build()
+                .setRunsCount(runs == null ? 1 : runs);
+        if (progress != null) {
+            builder.setProgress(progress);
+        }
+        if (report != null) {
+            builder.setReport(report);
+        }
+        builder.build()
                 .run();
     }
 
@@ -103,9 +130,11 @@ public class Main {
     }
 
     private static void usage() {
-        System.err.println("usage: ESPerfTest [-p parser] [-e] source [runCount]");
+        System.err.println("usage: JsParsePerfTest [-p parser] [-e] [-l progressFile] [-r reportFile] source [runCount]");
         System.err.println("\t-p parser type 'antlr' or 'nashorn', the default is antlr.");
         System.err.println("\t-e print errors, default false.");
+        System.err.println("\t-l progressFile the file to write progress into, default stdout.");
+        System.err.println("\t-r reportFile the file to write report into, default stdout.");
         System.err.println("\tsource the file or folder to parse.");
         System.err.println("\trunCount the number of test runs, default is one.");
         System.exit(1);
