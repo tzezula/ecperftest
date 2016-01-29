@@ -198,7 +198,9 @@ final class TestRunner implements Runnable {
     static final class Builder {
         private final ParserImplementation parser;
         private final File source;
-        private ParserOptions options = new ParserOptions(false);
+        private ParserOptions options = ParserOptions.Builder
+                .newInstance()
+                .build();
         private int runs = 1;
         private boolean warmUp;
         private PrintWriter progressWriter = new PrintWriter(new OutputStreamWriter(System.out));

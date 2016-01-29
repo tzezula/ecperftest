@@ -69,6 +69,9 @@ public class NashornParser implements ParserImplementation {
 
     @Override
     public void parse(File file, ParserOptions options) throws IOException {
+        if (!options.getParserSpecificOptions().isEmpty()) {
+            throw new IllegalArgumentException("Unsupported options");  //NOI18N
+        }
         final PrintWriter err = new PrintWriter(new OutputStreamWriter(options.isPrintError() ? System.err : new ByteArrayOutputStream()));
         final ScriptEnvironment env = new ScriptEnvironment(
                 new jdk.nashorn.internal.runtime.options.Options(file.getAbsolutePath()),

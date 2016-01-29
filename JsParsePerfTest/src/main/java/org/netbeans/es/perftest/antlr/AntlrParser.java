@@ -62,6 +62,7 @@ import org.netbeans.modules.javascript2.editor.parser6.ECMAScript6Parser;
  */
 public class AntlrParser implements ParserImplementation {
     public static final String NAME = "antlr";  //NOI18N
+    private static final String OPT_HISTO = "histo";    //NOI18N
 
     @Override
     public String getName() {
@@ -70,10 +71,20 @@ public class AntlrParser implements ParserImplementation {
 
     @Override
     public void parse(File file, ParserOptions options) throws IOException {
+        boolean printHistogram = false;
+        for (String option : options.getParserSpecificOptions()) {
+            if (OPT_HISTO.equals(option)) {
+                printHistogram = true;
+            } else {
+                throw new IllegalArgumentException(option);
+            }
+        }
         final ANTLRInputStream in = new ANTLRFileStream(file.getAbsolutePath());
         final ECMAScript6Lexer lexer = new ECMAScript6Lexer(in);
         final CommonTokenStream tokens = new CommonTokenStream(lexer);
-        ECMAScript6Parser parser = new ECMAScript6Parser(tokens);
+        ECMAScript6Parser parser = printHistogram ?
+                new TimesParser(tokens) :
+                new ECMAScript6Parser(tokens);
         parser.removeErrorListeners();
         parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
         parser.setErrorHandler(new BailErrorStrategy());
@@ -92,6 +103,13 @@ public class AntlrParser implements ParserImplementation {
             } else {
                 throw ex;
             }
+        }
+        if (printHistogram) {
+            ((TimesParser)parser).getHistogram()
+                    .stream()
+                    .forEach((rt) -> {
+                        System.out.println(rt.toString(parser));
+                    });
         }
     }
 }

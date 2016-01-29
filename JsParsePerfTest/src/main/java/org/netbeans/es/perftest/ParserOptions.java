@@ -41,19 +41,54 @@
  */
 package org.netbeans.es.perftest;
 
+import edu.emory.mathcs.backport.java.util.Collections;
+import java.util.Collection;
+
 /**
  *
  * @author Tomas Zezula
  */
 public final class ParserOptions {
     private final boolean printErrors;
+    private final Collection<? extends String> options;
 
-    ParserOptions(
-        boolean printErrors) {
+    private ParserOptions(
+        final boolean printErrors,
+        final Collection<? extends String> options) {
         this.printErrors = printErrors;
+        this.options = options;
     }
 
     public boolean isPrintError() {
         return printErrors;
+    }
+
+    public Collection<? extends String> getParserSpecificOptions() {
+        return options;
+    }
+
+    static final class Builder {
+        private boolean printErrors = false;
+        private Collection<? extends String> options = Collections.emptyList();
+        private Builder() {}
+
+        Builder setPrintErrors(final boolean printErrors) {
+            this.printErrors = printErrors;
+            return this;
+        }
+
+        Builder setParserSpecificOptions(final Collection<? extends String> options) {
+            options.getClass();
+            this.options = options;
+            return this;
+        }
+
+        ParserOptions build() {
+            return new ParserOptions(printErrors, options);
+        }
+
+        static Builder newInstance() {
+            return new Builder();
+        }
     }
 }

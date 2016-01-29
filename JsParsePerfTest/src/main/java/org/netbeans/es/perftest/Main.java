@@ -43,6 +43,8 @@ package org.netbeans.es.perftest;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.Queue;
 import java.util.ServiceLoader;
 import org.netbeans.es.perftest.antlr.AntlrParser;
 
@@ -53,9 +55,10 @@ import org.netbeans.es.perftest.antlr.AntlrParser;
 public class Main {
     public static void main(final String...args) throws IOException {
         boolean printErrors = false;
-        boolean warmUp = false;
+        final Queue<String> parserOptions = new ArrayDeque<>();
         ParserImplementation parser = null;
         File source = null;
+        boolean warmUp = false;
         File report = null;
         File progress = null;
         Integer runs = null;
@@ -82,6 +85,14 @@ public class Main {
                             throw new  IllegalArgumentException("-r");
                         }
                         report = f;
+                        break;
+                    }
+                    case "-o": {
+                        final String option = (++i < args.length) ? args[i] : null;
+                        if (option == null) {
+                            throw new  IllegalArgumentException("-o");
+                        }
+                        parserOptions.offer(option);
                         break;
                     }
                     case "-l": {    //NOI18N
@@ -112,8 +123,12 @@ public class Main {
         } catch (RuntimeException re) {
             usage();
         }
+        final ParserOptions options = ParserOptions.Builder.newInstance()
+                .setPrintErrors(printErrors)
+                .setParserSpecificOptions(parserOptions)
+                .build();
         TestRunner.Builder builder = TestRunner.Builder.newInstance(parser, source)
-                .setOptions(new ParserOptions(printErrors))
+                .setOptions(options)
                 .setRunsCount(runs == null ? 1 : runs)
                 .setWarmUp(warmUp);
         if (progress != null) {
