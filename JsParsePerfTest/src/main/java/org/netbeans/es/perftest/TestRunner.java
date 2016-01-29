@@ -117,7 +117,7 @@ final class TestRunner implements Runnable {
                         })
                         .reduce(0L, (a,b)->{return a + b;});
             }
-            reportHeader(reportWriter, parser, source);
+            reportHeader(reportWriter, parser, source, warmUp);
             timesPerFile.entrySet().stream().forEach((e) -> {
                 report(reportWriter, e.getKey().getName(), e.getValue());
             });
@@ -139,10 +139,13 @@ final class TestRunner implements Runnable {
     private static void reportHeader(
         final PrintWriter w,
         final ParserImplementation parser,
-        final File source) {
+        final File source,
+        final boolean warmUp) {
         w.println("########################################");
         w.printf("Executed: %s%n", new Date());
-        w.printf("Parser: %s%n", parser.getName());
+        w.printf("Parser: %s%s%n",
+                parser.getName(),
+                warmUp ? " (warmed up)" : "");
         w.printf(source.isDirectory() ?
             "Tested files in directory: %s%n" :
             "Tested file: %s%n",
