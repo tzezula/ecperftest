@@ -43,6 +43,7 @@ package org.netbeans.es.perftest.antlr;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Map;
 import java.util.TreeMap;
 import org.antlr.v4.runtime.ANTLRFileStream;
@@ -128,10 +129,11 @@ public class AntlrParser implements ParserImplementation {
                 }
             }
             if (printHistogram) {
+                final PrintWriter pw = options.getProgressWriter();
                 ((TimesParser)parser).getHistogram()
                         .stream()
                         .forEach((rt) -> {
-                            System.out.println(rt.toString(parser));
+                            pw.println(rt.toString(parser));
                         });
             }
         }

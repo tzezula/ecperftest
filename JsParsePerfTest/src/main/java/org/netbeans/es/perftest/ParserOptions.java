@@ -42,6 +42,11 @@
 package org.netbeans.es.perftest;
 
 import edu.emory.mathcs.backport.java.util.Collections;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.Collection;
 
 /**
@@ -51,12 +56,15 @@ import java.util.Collection;
 public final class ParserOptions {
     private final boolean printErrors;
     private final Collection<? extends String> options;
+    private final PrintWriter progressWriter;
 
     private ParserOptions(
         final boolean printErrors,
-        final Collection<? extends String> options) {
+        final Collection<? extends String> options,
+        final PrintWriter progressWriter) {
         this.printErrors = printErrors;
         this.options = options;
+        this.progressWriter = progressWriter;
     }
 
     public boolean isPrintError() {
@@ -67,8 +75,13 @@ public final class ParserOptions {
         return options;
     }
 
+    public PrintWriter getProgressWriter() {
+        return progressWriter;
+    }
+
     static final class Builder {
         private boolean printErrors = false;
+        private PrintWriter progressWriter = defaultProgress();
         private Collection<? extends String> options = Collections.emptyList();
         private Builder() {}
 
@@ -83,12 +96,23 @@ public final class ParserOptions {
             return this;
         }
 
+        Builder setProgress(File file) throws IOException {
+            this.progressWriter = file != null ?
+                    new PrintWriter(new OutputStreamWriter(new FileOutputStream(file, true))) :
+                    defaultProgress();
+            return this;
+        }
+
         ParserOptions build() {
-            return new ParserOptions(printErrors, options);
+            return new ParserOptions(printErrors, options, progressWriter);
         }
 
         static Builder newInstance() {
             return new Builder();
+        }
+
+        private static PrintWriter defaultProgress() {
+            return new PrintWriter(new OutputStreamWriter(System.out));
         }
     }
 }

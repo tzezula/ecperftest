@@ -136,18 +136,13 @@ public class Main {
         final ParserOptions options = ParserOptions.Builder.newInstance()
                 .setPrintErrors(printErrors)
                 .setParserSpecificOptions(parserOptions)
+                .setProgress(progress)
                 .build();
-        TestRunner.Builder builder = TestRunner.Builder.newInstance(parser, source)
-                .setOptions(options)
+        TestRunner.Builder.newInstance(parser, options, source)
                 .setRunsCount(runs == null ? 1 : runs)
-                .setWarmUp(warmUp);
-        if (progress != null) {
-            builder.setProgress(progress);
-        }
-        if (report != null) {
-            builder.setReport(report);
-        }
-        builder.build()
+                .setWarmUp(warmUp)
+                .setReport(report)
+                .build()
                 .run();
     }
 

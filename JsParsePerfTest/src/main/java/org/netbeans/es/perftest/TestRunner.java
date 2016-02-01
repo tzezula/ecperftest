@@ -67,14 +67,13 @@ final class TestRunner implements Runnable {
             final ParserOptions opts,
             final int runs,
             final boolean warmUp,
-            final PrintWriter progressWriter,
             final PrintWriter reportWriter) {
         this.parser = parser;
         this.source = source;
         this.opts = opts;
         this.runs = runs;
         this.warmUp = warmUp;
-        this.progressWriter = progressWriter;
+        this.progressWriter = opts.getProgressWriter();
         this.reportWriter = reportWriter;
     }
 
@@ -198,19 +197,19 @@ final class TestRunner implements Runnable {
     static final class Builder {
         private final ParserImplementation parser;
         private final File source;
-        private ParserOptions options = ParserOptions.Builder
-                .newInstance()
-                .build();
+        private final ParserOptions options;
         private int runs = 1;
         private boolean warmUp;
-        private PrintWriter progressWriter = new PrintWriter(new OutputStreamWriter(System.out));
-        private PrintWriter reportWriter = progressWriter;
+        private PrintWriter reportWriter;
 
         private Builder(
                 final ParserImplementation parser,
+                final ParserOptions options,
                 final File source) {
             this.parser = parser;
+            this.options = options;
             this.source = source;
+            this.reportWriter = options.getProgressWriter();
         }
 
         Builder setRunsCount(int runs) {
@@ -223,21 +222,10 @@ final class TestRunner implements Runnable {
             return this;
         }
 
-        Builder setOptions(ParserOptions options) {
-            options.getClass();
-            this.options = options;
-            return this;
-        }
-
-        Builder setProgress(File file) throws IOException {
-            file.getClass();
-            this.progressWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file, true)));
-            return this;
-        }
-
         Builder setReport(File file) throws IOException {
-            file.getClass();
-            this.reportWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file, true)));
+            this.reportWriter = file != null ?
+                    new PrintWriter(new OutputStreamWriter(new FileOutputStream(file, true))) :
+                    options.getProgressWriter();
             return this;
         }
 
@@ -248,14 +236,14 @@ final class TestRunner implements Runnable {
                     options,
                     runs,
                     warmUp,
-                    progressWriter,
                     reportWriter);
         }
 
         static Builder newInstance(
             final ParserImplementation parser,
+            final ParserOptions options,
             final File source) {
-            return new Builder(parser, source);
+            return new Builder(parser, options, source);
         }
     }
 }
