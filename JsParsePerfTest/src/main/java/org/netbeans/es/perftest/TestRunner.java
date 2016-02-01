@@ -81,16 +81,17 @@ final class TestRunner implements Runnable {
     @Override
     public void run() {
         try {
+            final boolean[] parserRes = new boolean[1];
             if (warmUp) {
                 progress(progressWriter, "Warm up...%n");
-                files(source).forEach((f)->parse(parser, f, opts));
+                files(source).forEach((f)->parse(parser, f, opts, parserRes));
             }
             progress(progressWriter, "Parsing %s using %s in %d round(s).%n",
                     source.getName(),
                     parser.getName(),
                     runs);
             final long[] totalTimes = new long[runs];
-            final Map<File,long[]> timesPerFile = new TreeMap<>((f1,f2) -> {
+            final Map<File,FileStat> timesPerFile = new TreeMap<>((f1,f2) -> {
                     int res = f1.getName().compareTo(f2.getName());
                     if (res == 0) {
                         res = f1.getAbsolutePath().compareTo(f2.getAbsolutePath());
@@ -102,25 +103,27 @@ final class TestRunner implements Runnable {
                 final int fi = i;
                 totalTimes[i] = files(source)
                         .map((f)->{
-                            final long t = parse(parser, f, opts);
-                            progress(progressWriter, "Parsing %s took: %dms.%n",   //NOI18N
+                            final long t = parse(parser, f, opts, parserRes);
+                            progress(progressWriter, "Parsing %s took: %dms success: %b.%n",   //NOI18N
                                     f.getName(),
-                                    t);
-                            long[] ts = timesPerFile.get(f);
+                                    t,
+                                    parserRes[0]);
+                            FileStat ts = timesPerFile.get(f);
                             if (ts == null) {
-                                ts = new long[runs];
+                                ts = new FileStat(runs);
                                 timesPerFile.put(f, ts);
                             }
-                            ts[fi] = t;
+                            ts.times[fi] = t;
+                            ts.res &= parserRes[0];
                             return t;
                         })
                         .reduce(0L, (a,b)->{return a + b;});
             }
             reportHeader(reportWriter, parser, source, warmUp);
             timesPerFile.entrySet().stream().forEach((e) -> {
-                report(reportWriter, e.getKey().getName(), e.getValue());
+                report(reportWriter, e.getKey().getName(), e.getValue().times, e.getValue().res);
             });
-            report(reportWriter, "Whole parsing took",totalTimes);    //NOI18N
+            report(reportWriter, "Whole parsing took", totalTimes, null);    //NOI18N
         } catch (IOException ioe) {
             TestRunner.<Void,RuntimeException>sthrow(ioe);
         }
@@ -156,7 +159,8 @@ final class TestRunner implements Runnable {
     private static void report(
             final PrintWriter w,
             final String message,
-            final long[] times) {
+            final long[] times,
+            final Boolean res) {
         w.printf("%s:",message);           //NOI18N
         long total = 0L;
         for (int i=0; i< times.length; i++) {
@@ -164,6 +168,9 @@ final class TestRunner implements Runnable {
             w.printf(" %d : %dms", 1+i, times[i]); //NOI18N
         }
         w.printf("\t\t\tAvg : %dms",(total/times.length));
+        if (res != null) {
+            w.printf("\tSuccess: %b", res);
+        }
         w.println();
         w.flush();
     }
@@ -171,10 +178,11 @@ final class TestRunner implements Runnable {
     private static long parse (
         final ParserImplementation parser,
         final File file,
-        final ParserOptions opts) {
+        final ParserOptions opts,
+        final boolean[] res) {
         long st = System.currentTimeMillis();
         try {
-            parser.parse(file, opts);
+            res[0] = parser.parse(file, opts);
         } catch (IOException ioe) {
             TestRunner.<Void,RuntimeException>sthrow(ioe);
         }
@@ -244,6 +252,16 @@ final class TestRunner implements Runnable {
             final ParserOptions options,
             final File source) {
             return new Builder(parser, options, source);
+        }
+    }
+
+    private static class FileStat {
+        final long[] times;
+        boolean res;
+
+        FileStat(final int length) {
+            this.times = new long[length];
+            this.res = true;
         }
     }
 }

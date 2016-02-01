@@ -81,7 +81,7 @@ public class AntlrParser implements ParserImplementation {
     }
 
     @Override
-    public void parse(File file, ParserOptions options) throws IOException {
+    public boolean parse(File file, ParserOptions options) throws IOException {
         boolean printHistogram = false;
         boolean lex = false;
         for (String option : options.getParserSpecificOptions()) {
@@ -96,8 +96,12 @@ public class AntlrParser implements ParserImplementation {
                     throw new IllegalArgumentException(option);
             }
         }
+        final ErrorListener errorListener = new ErrorListener(
+                options.getProgressWriter(),
+                options.isPrintError());
         final ANTLRInputStream in = new ANTLRFileStream(file.getAbsolutePath());
         final ECMAScript6Lexer lexer = new ECMAScript6Lexer(in);
+        lexer.addErrorListener(errorListener);
         final CommonTokenStream tokens = new CommonTokenStream(lexer);
         if (lex) {
             //Lexer performance only
@@ -118,9 +122,7 @@ public class AntlrParser implements ParserImplementation {
                 if ((ex instanceof RuntimeException) && (ex.getCause() instanceof RecognitionException)) {
                     tokens.reset();
                     parser.setErrorHandler(new DefaultErrorStrategy());
-                    if (options.isPrintError()) {
-                        parser.addErrorListener(new ErrorListener(options.getProgressWriter()));
-                    }
+                    parser.addErrorListener(errorListener);
                     parser.getInterpreter().setPredictionMode(PredictionMode.LL);
                     program = parser.program();
                 } else {
@@ -136,5 +138,6 @@ public class AntlrParser implements ParserImplementation {
                         });
             }
         }
+        return !errorListener.hasErrors();
     }
 }

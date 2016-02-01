@@ -52,10 +52,15 @@ import org.antlr.v4.runtime.Recognizer;
  */
 final class ErrorListener implements ANTLRErrorListener<Object>{
     private final PrintWriter out;
+    private final boolean printError;
+    private boolean hasErrors = false;
 
-    ErrorListener(final PrintWriter out) {
+    ErrorListener(
+            final PrintWriter out,
+            final boolean printError) {
         out.getClass();
         this.out = out;
+        this.printError = printError;
     }
 
     @Override
@@ -66,9 +71,16 @@ final class ErrorListener implements ANTLRErrorListener<Object>{
             final int charPositionInLine,
             final String msg,
             final RecognitionException e) {
-		out.printf("line %d: %d %s%n",
-                    line,
-                    charPositionInLine,
-                    msg);
+        hasErrors = true;
+        if (printError) {
+            out.printf("line %d: %d %s%n",
+                line,
+                charPositionInLine,
+                msg);
+        }
+    }
+
+    boolean hasErrors() {
+        return hasErrors;
     }
 }

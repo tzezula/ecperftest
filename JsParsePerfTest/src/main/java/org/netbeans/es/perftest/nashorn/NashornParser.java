@@ -75,7 +75,7 @@ public class NashornParser implements ParserImplementation {
     }
 
     @Override
-    public void parse(File file, ParserOptions options) throws IOException {
+    public boolean parse(File file, ParserOptions options) throws IOException {
         if (!options.getParserSpecificOptions().isEmpty()) {
             throw new IllegalArgumentException("Unsupported options");  //NOI18N
         }
@@ -90,6 +90,7 @@ public class NashornParser implements ParserImplementation {
         final ErrorManager em = new ErrorManager(err);
         final Parser p = new Parser(env, src, em);
         final FunctionNode node = p.parse();
+        return !em.hasErrors();
     }
 
 }

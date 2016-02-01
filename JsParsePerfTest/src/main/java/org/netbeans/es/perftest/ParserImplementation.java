@@ -52,5 +52,5 @@ import java.util.Map;
 public interface ParserImplementation {
     String getName();
     Map<String,String> getOptions();
-    void parse(File file, ParserOptions options) throws IOException;
+    boolean parse(File file, ParserOptions options) throws IOException;
 }
