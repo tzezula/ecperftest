@@ -43,6 +43,7 @@ package org.netbeans.es.perftest;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 /**
  *
@@ -50,5 +51,6 @@ import java.io.IOException;
  */
 public interface ParserImplementation {
     String getName();
+    Map<String,String> getOptions();
     void parse(File file, ParserOptions options) throws IOException;
 }

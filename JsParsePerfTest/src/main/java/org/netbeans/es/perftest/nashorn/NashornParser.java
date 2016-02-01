@@ -46,6 +46,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.Collections;
+import java.util.Map;
 import jdk.nashorn.internal.ir.FunctionNode;
 import jdk.nashorn.internal.parser.Parser;
 import jdk.nashorn.internal.runtime.ErrorManager;
@@ -65,6 +67,11 @@ public class NashornParser implements ParserImplementation {
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public Map<String, String> getOptions() {
+        return Collections.emptyMap();
     }
 
     @Override

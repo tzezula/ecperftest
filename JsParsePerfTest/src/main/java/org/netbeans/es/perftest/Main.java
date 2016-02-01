@@ -44,8 +44,10 @@ package org.netbeans.es.perftest;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.Map;
 import java.util.Queue;
 import java.util.ServiceLoader;
+import java.util.Set;
 import org.netbeans.es.perftest.antlr.AntlrParser;
 
 /**
@@ -120,6 +122,14 @@ public class Main {
             if (source == null || !source.canRead()) {
                 throw new IllegalStateException();
             }
+            if (!parserOptions.isEmpty()) {
+                final Set<String> supportedOptions = parser.getOptions().keySet();
+                for (String parserOption : parserOptions) {
+                    if (!supportedOptions.contains(parserOption)) {
+                        throw new IllegalArgumentException(parserOption);
+                    }
+                }
+            }
         } catch (RuntimeException re) {
             usage();
         }
@@ -160,6 +170,18 @@ public class Main {
         System.err.println("\t-o option the parser specific option.");
         System.err.println("\tsource the file or folder to parse.");
         System.err.println("\trunCount the number of test runs, default is one.");
+        for (ParserImplementation parser : ServiceLoader.load(ParserImplementation.class)) {
+            final Map<String,String> options = parser.getOptions();
+            if (!options.isEmpty()) {
+                System.err.printf("%n\tThe %s parser specic options:%n",
+                        parser.getName());
+                for (Map.Entry<String,String> option : options.entrySet()) {
+                    System.err.printf("\t\t%s %s.%n",
+                            option.getKey(),
+                            option.getValue());
+                }
+            }
+        }
         System.exit(1);
     }
 }

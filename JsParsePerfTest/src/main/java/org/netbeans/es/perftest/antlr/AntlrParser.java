@@ -43,6 +43,8 @@ package org.netbeans.es.perftest.antlr;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
+import java.util.TreeMap;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BailErrorStrategy;
@@ -68,6 +70,14 @@ public class AntlrParser implements ParserImplementation {
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public Map<String, String> getOptions() {
+        final Map m =  new TreeMap<>();
+        m.put(OPT_HISTO, "prints a histogram for each parser rule");    //NOI18N
+        m.put(OPT_LEX, "meassures only lexer");                         //NOI18N
+        return m;
     }
 
     @Override
