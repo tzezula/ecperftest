@@ -39,57 +39,36 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.es.perftest.nashorn;
+package org.netbeans.es.perftest.antlr;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.Collections;
-import java.util.Map;
-import jdk.nashorn.internal.ir.FunctionNode;
-import jdk.nashorn.internal.parser.Parser;
-import jdk.nashorn.internal.runtime.ErrorManager;
-import jdk.nashorn.internal.runtime.ScriptEnvironment;
-import jdk.nashorn.internal.runtime.Source;
-import org.netbeans.es.perftest.ParserOptions;
-import org.netbeans.es.perftest.ParserImplementation;
+import org.antlr.v4.runtime.ANTLRErrorListener;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class NashornParser implements ParserImplementation {
+final class ErrorListener implements ANTLRErrorListener<Object>{
+    private final PrintWriter out;
 
-    public static final String NAME ="nashorn"; //NOI18N
-
-    @Override
-    public String getName() {
-        return NAME;
+    ErrorListener(final PrintWriter out) {
+        out.getClass();
+        this.out = out;
     }
 
     @Override
-    public Map<String, String> getOptions() {
-        return Collections.emptyMap();
+    public <T extends Object> void syntaxError(
+            final Recognizer<T, ?> recognizer,
+            final T offendingSymbol,
+            final int line,
+            final int charPositionInLine,
+            final String msg,
+            final RecognitionException e) {
+		out.printf("line %d: %d %s%n",
+                    line,
+                    charPositionInLine,
+                    msg);
     }
-
-    @Override
-    public void parse(File file, ParserOptions options) throws IOException {
-        if (!options.getParserSpecificOptions().isEmpty()) {
-            throw new IllegalArgumentException("Unsupported options");  //NOI18N
-        }
-        final PrintWriter err = options.isPrintError() ?
-                options.getProgressWriter() :
-                new PrintWriter(new OutputStreamWriter(new ByteArrayOutputStream()));
-        final ScriptEnvironment env = new ScriptEnvironment(
-                new jdk.nashorn.internal.runtime.options.Options(file.getAbsolutePath()),
-                err,
-                err);
-        final Source src = Source.sourceFor(file.getName(), file);
-        final ErrorManager em = new ErrorManager(err);
-        final Parser p = new Parser(env, src, em);
-        final FunctionNode node = p.parse();
-    }
-
 }

@@ -50,7 +50,6 @@ import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.DefaultErrorStrategy;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.atn.PredictionMode;
@@ -120,7 +119,7 @@ public class AntlrParser implements ParserImplementation {
                     tokens.reset();
                     parser.setErrorHandler(new DefaultErrorStrategy());
                     if (options.isPrintError()) {
-                        parser.addErrorListener(ConsoleErrorListener.INSTANCE);
+                        parser.addErrorListener(new ErrorListener(options.getProgressWriter()));
                     }
                     parser.getInterpreter().setPredictionMode(PredictionMode.LL);
                     program = parser.program();
