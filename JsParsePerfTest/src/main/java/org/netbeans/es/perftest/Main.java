@@ -151,12 +151,13 @@ public class Main {
     }
 
     private static void usage() {
-        System.err.println("usage: JsParsePerfTest [-p parser] [-e] [-w] [-l progressFile] [-r reportFile] source [runCount]");
+        System.err.println("usage: JsParsePerfTest [-p parser] [-e] [-w] [-l progressFile] [-r reportFile] [-o parser specific option] source [runCount]");
         System.err.println("\t-p parser type 'antlr' or 'nashorn', the default is antlr.");
         System.err.println("\t-e print errors, default false.");
         System.err.println("\t-w warm up parser, default false.");
         System.err.println("\t-l progressFile the file to write progress into, default stdout.");
         System.err.println("\t-r reportFile the file to write report into, default stdout.");
+        System.err.println("\t-o option the parser specific option.");
         System.err.println("\tsource the file or folder to parse.");
         System.err.println("\trunCount the number of test runs, default is one.");
         System.exit(1);
