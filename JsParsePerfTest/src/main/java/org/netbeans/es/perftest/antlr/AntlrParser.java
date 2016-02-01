@@ -63,6 +63,7 @@ import org.netbeans.modules.javascript2.editor.parser6.ECMAScript6Parser;
 public class AntlrParser implements ParserImplementation {
     public static final String NAME = "antlr";  //NOI18N
     private static final String OPT_HISTO = "histo";    //NOI18N
+    private static final String OPT_LEX = "lex";    //NOI18N
 
     @Override
     public String getName() {
@@ -72,44 +73,57 @@ public class AntlrParser implements ParserImplementation {
     @Override
     public void parse(File file, ParserOptions options) throws IOException {
         boolean printHistogram = false;
+        boolean lex = false;
         for (String option : options.getParserSpecificOptions()) {
-            if (OPT_HISTO.equals(option)) {
-                printHistogram = true;
-            } else {
-                throw new IllegalArgumentException(option);
+            switch (option) {
+                case OPT_HISTO:
+                    printHistogram = true;
+                    break;
+                case OPT_LEX:
+                    lex = true;
+                    break;
+                default:
+                    throw new IllegalArgumentException(option);
             }
         }
         final ANTLRInputStream in = new ANTLRFileStream(file.getAbsolutePath());
         final ECMAScript6Lexer lexer = new ECMAScript6Lexer(in);
         final CommonTokenStream tokens = new CommonTokenStream(lexer);
-        ECMAScript6Parser parser = printHistogram ?
-                new TimesParser(tokens) :
-                new ECMAScript6Parser(tokens);
-        parser.removeErrorListeners();
-        parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
-        parser.setErrorHandler(new BailErrorStrategy());
-        ECMAScript6Parser.ProgramContext program;
-        try {
-            program = parser.program();
-        } catch (RuntimeException ex) {
-            if ((ex instanceof RuntimeException) && (ex.getCause() instanceof RecognitionException)) {
-                tokens.reset();
-                parser.setErrorHandler(new DefaultErrorStrategy());
-                if (options.isPrintError()) {
-                    parser.addErrorListener(ConsoleErrorListener.INSTANCE);
-                }
-                parser.getInterpreter().setPredictionMode(PredictionMode.LL);
+        if (lex) {
+            //Lexer performance only
+            tokens.fill();
+            tokens.getTokens();
+        } else {
+            //Full parse performance
+            ECMAScript6Parser parser = printHistogram ?
+                    new TimesParser(tokens) :
+                    new ECMAScript6Parser(tokens);
+            parser.removeErrorListeners();
+            parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
+            parser.setErrorHandler(new BailErrorStrategy());
+            ECMAScript6Parser.ProgramContext program;
+            try {
                 program = parser.program();
-            } else {
-                throw ex;
+            } catch (RuntimeException ex) {
+                if ((ex instanceof RuntimeException) && (ex.getCause() instanceof RecognitionException)) {
+                    tokens.reset();
+                    parser.setErrorHandler(new DefaultErrorStrategy());
+                    if (options.isPrintError()) {
+                        parser.addErrorListener(ConsoleErrorListener.INSTANCE);
+                    }
+                    parser.getInterpreter().setPredictionMode(PredictionMode.LL);
+                    program = parser.program();
+                } else {
+                    throw ex;
+                }
             }
-        }
-        if (printHistogram) {
-            ((TimesParser)parser).getHistogram()
-                    .stream()
-                    .forEach((rt) -> {
-                        System.out.println(rt.toString(parser));
-                    });
+            if (printHistogram) {
+                ((TimesParser)parser).getHistogram()
+                        .stream()
+                        .forEach((rt) -> {
+                            System.out.println(rt.toString(parser));
+                        });
+            }
         }
     }
 }
