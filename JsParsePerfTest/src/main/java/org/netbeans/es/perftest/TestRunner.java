@@ -211,7 +211,7 @@ final class TestRunner implements Runnable {
         return source.isFile() ?
                 Stream.of(source) :
                 Files.walk(source.toPath())
-                        .filter((p)->p.getFileName().toString().toLowerCase().endsWith(".js"))  //NOI18N
+                        .filter((p)->p.getFileName().toString().toLowerCase().endsWith(".js") && p.toFile().isFile())  //NOI18N
                         .map((p)->p.toFile());
     }
 
