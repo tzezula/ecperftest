@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.file.Files;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.TreeMap;
@@ -119,7 +120,7 @@ final class TestRunner implements Runnable {
                         })
                         .reduce(0L, (a,b)->{return a + b;});
             }
-            reportHeader(reportWriter, parser, source, warmUp);
+            reportHeader(reportWriter, parser, source, warmUp, opts.getParserSpecificOptions());
             timesPerFile.entrySet().stream().forEach((e) -> {
                 report(reportWriter, e.getKey().getName(), e.getValue().times, e.getValue().res);
             });
@@ -142,12 +143,28 @@ final class TestRunner implements Runnable {
         final PrintWriter w,
         final ParserImplementation parser,
         final File source,
-        final boolean warmUp) {
+        final boolean warmUp,
+        final Collection<? extends String> options) {
         w.println("########################################");
         w.printf("Executed: %s%n", new Date());
+        final StringBuilder sb = new StringBuilder();
+        if (warmUp) {
+            sb.append(" (warmed up");
+        }
+        for (String o : options) {
+            if (sb.length() == 0) {
+                sb.append(" (");
+            } else {
+                sb.append(", ");
+            }
+            sb.append(o);
+        }
+        if (sb.length()>0) {
+            sb.append(')');
+        }
         w.printf("Parser: %s%s%n",
                 parser.getName(),
-                warmUp ? " (warmed up)" : "");
+                sb);
         w.printf(source.isDirectory() ?
             "Tested files in directory: %s%n" :
             "Tested file: %s%n",
