@@ -57,14 +57,17 @@ public final class ParserOptions {
     private final boolean printErrors;
     private final Collection<? extends String> options;
     private final PrintWriter progressWriter;
+    private final PrintWriter reportWriter;
 
     private ParserOptions(
         final boolean printErrors,
         final Collection<? extends String> options,
-        final PrintWriter progressWriter) {
+        final PrintWriter progressWriter,
+        final PrintWriter reportWriter) {
         this.printErrors = printErrors;
         this.options = options;
         this.progressWriter = progressWriter;
+        this.reportWriter = reportWriter;
     }
 
     public boolean isPrintError() {
@@ -79,9 +82,18 @@ public final class ParserOptions {
         return progressWriter;
     }
 
+    public PrintWriter getReportWriter() {
+        return reportWriter;
+    }
+
+    public static String[] splitParserArg(final String parserOption) {
+        return parserOption.split(","); //NOI18N
+    }
+
     static final class Builder {
         private boolean printErrors = false;
-        private PrintWriter progressWriter = defaultProgress();
+        private PrintWriter progressWriter = defaultWriter();
+        private PrintWriter reportWriter = defaultWriter();
         private Collection<? extends String> options = Collections.emptyList();
         private Builder() {}
 
@@ -99,19 +111,26 @@ public final class ParserOptions {
         Builder setProgress(File file) throws IOException {
             this.progressWriter = file != null ?
                     new PrintWriter(new OutputStreamWriter(new FileOutputStream(file, true))) :
-                    defaultProgress();
+                    defaultWriter();
+            return this;
+        }
+
+        Builder setReport(File file) throws IOException {
+            this.reportWriter = file != null ?
+                    new PrintWriter(new OutputStreamWriter(new FileOutputStream(file, true))) :
+                    defaultWriter();
             return this;
         }
 
         ParserOptions build() {
-            return new ParserOptions(printErrors, options, progressWriter);
+            return new ParserOptions(printErrors, options, progressWriter, reportWriter);
         }
 
         static Builder newInstance() {
             return new Builder();
         }
 
-        private static PrintWriter defaultProgress() {
+        private static PrintWriter defaultWriter() {
             return new PrintWriter(new OutputStreamWriter(System.out));
         }
     }

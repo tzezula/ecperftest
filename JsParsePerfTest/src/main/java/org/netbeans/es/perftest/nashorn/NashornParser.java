@@ -75,10 +75,14 @@ public class NashornParser implements ParserImplementation {
     }
 
     @Override
-    public boolean parse(File file, ParserOptions options) throws IOException {
+    public void setUp(ParserOptions options) {
         if (!options.getParserSpecificOptions().isEmpty()) {
             throw new IllegalArgumentException("Unsupported options");  //NOI18N
         }
+    }
+
+    @Override
+    public boolean parse(File file, ParserOptions options) throws IOException {
         final PrintWriter err = options.isPrintError() ?
                 options.getProgressWriter() :
                 new PrintWriter(new OutputStreamWriter(new ByteArrayOutputStream()));
@@ -91,6 +95,10 @@ public class NashornParser implements ParserImplementation {
         final Parser p = new Parser(env, src, em);
         final FunctionNode node = p.parse();
         return !em.hasErrors();
+    }
+
+    @Override
+    public void report(ParserOptions options) {
     }
 
 }

@@ -44,6 +44,7 @@ package org.netbeans.es.perftest.antlr;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 import org.antlr.v4.runtime.ANTLRFileStream;
@@ -53,6 +54,8 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.DefaultErrorStrategy;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.atn.PredictionMode;
+import org.antlr.v4.runtime.dfa.DFA;
+import org.antlr.v4.runtime.dfa.DFAState;
 import org.netbeans.es.perftest.ParserOptions;
 import org.netbeans.es.perftest.ParserImplementation;
 import org.netbeans.modules.javascript2.editor.parser6.ECMAScript6Lexer;
@@ -66,6 +69,12 @@ public class AntlrParser implements ParserImplementation {
     public static final String NAME = "antlr";  //NOI18N
     private static final String OPT_HISTO = "histo";    //NOI18N
     private static final String OPT_LEX = "lex";    //NOI18N
+    private static final String OPT_ATNCFG_COUNT = "atncfg";    //NOI18N
+
+    private boolean printHistogram = false;
+    private boolean printAtnCfgCount = false;
+    private boolean lex = false;
+    private int printAtnCfgCountLimit = -1;
 
     @Override
     public String getName() {
@@ -77,25 +86,37 @@ public class AntlrParser implements ParserImplementation {
         final Map m =  new TreeMap<>();
         m.put(OPT_HISTO, "prints a histogram for each parser rule");    //NOI18N
         m.put(OPT_LEX, "meassures only lexer");                         //NOI18N
+        m.put(OPT_ATNCFG_COUNT,"prints ATNConfig count per decision");  //NOI18N
         return m;
     }
 
     @Override
-    public boolean parse(File file, ParserOptions options) throws IOException {
-        boolean printHistogram = false;
-        boolean lex = false;
+    public void setUp(ParserOptions options) {
+        printHistogram = lex = printAtnCfgCount = false;
+        printAtnCfgCountLimit = -1;
         for (String option : options.getParserSpecificOptions()) {
-            switch (option) {
+            final String[] splitted = ParserOptions.splitParserArg(option);
+            switch (splitted[0]) {
                 case OPT_HISTO:
                     printHistogram = true;
                     break;
                 case OPT_LEX:
                     lex = true;
                     break;
+                case OPT_ATNCFG_COUNT:
+                    printAtnCfgCount = true;
+                    if (splitted.length > 1) {
+                        printAtnCfgCountLimit = Integer.parseInt(splitted[1]);
+                    }
+                    break;
                 default:
                     throw new IllegalArgumentException(option);
             }
         }
+    }
+
+    @Override
+    public boolean parse(File file, ParserOptions options) throws IOException {
         final ErrorListener errorListener = new ErrorListener(
                 options.getProgressWriter(),
                 options.isPrintError());
@@ -139,5 +160,38 @@ public class AntlrParser implements ParserImplementation {
             }
         }
         return !errorListener.hasErrors();
+    }
+
+    @Override
+    public void report(ParserOptions options) {
+        if (printAtnCfgCount) {
+            final PrintWriter rw = options.getReportWriter();
+            rw.printf("%nATNConfig count per decision:%n"); //NOI18N
+            final DFA[] dfas = ECMAScript6Parser._ATN.decisionToDFA;
+            final int[][] atnCfgCountToDecision = new int[dfas.length][];
+            for (int i=0; i<dfas.length; i++) {
+                int atnCfgCount = 0;
+                for (DFAState dfaState : dfas[i].states.keySet()) {
+                    atnCfgCount+=dfaState.configs.size();
+                }
+                atnCfgCountToDecision[i] = new int[] {i, atnCfgCount};
+            }
+            Arrays.sort(
+                    atnCfgCountToDecision,
+                    (int[]a, int[]b) -> {
+                        return a[1] > b[1] ? -1 : a[1] == b[1] ? 0 : 1;
+                    }
+            );
+            Arrays.stream(atnCfgCountToDecision)
+                    .limit(printAtnCfgCountLimit == -1 ?
+                            atnCfgCountToDecision.length :
+                            printAtnCfgCountLimit)
+                    .forEach((a)->{
+                        rw.printf("Decision: %d ATNConfigs: %d%n",  //NOI18N
+                                a[0],
+                                a[1]);
+                        });
+            rw.flush();
+        }
     }
 }

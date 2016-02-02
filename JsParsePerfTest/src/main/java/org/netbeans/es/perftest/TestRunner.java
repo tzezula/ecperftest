@@ -42,9 +42,7 @@
 package org.netbeans.es.perftest;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.util.Collection;
@@ -67,15 +65,14 @@ final class TestRunner implements Runnable {
             final File source,
             final ParserOptions opts,
             final int runs,
-            final boolean warmUp,
-            final PrintWriter reportWriter) {
+            final boolean warmUp) {
         this.parser = parser;
         this.source = source;
         this.opts = opts;
         this.runs = runs;
         this.warmUp = warmUp;
         this.progressWriter = opts.getProgressWriter();
-        this.reportWriter = reportWriter;
+        this.reportWriter = opts.getReportWriter();
     }
 
 
@@ -99,10 +96,12 @@ final class TestRunner implements Runnable {
                     }
                     return res;
             });
+            parser.setUp(opts);
             for (int i = 0; i < runs; i++) {
                 progress(progressWriter, "Run: %d%n", 1+i);
                 final int fi = i;
                 totalTimes[i] = files(source)
+                        .limit(10)
                         .map((f)->{
                             final long t = parse(parser, f, opts, parserRes);
                             progress(progressWriter, "Parsing %s took: %dms success: %b.%n",   //NOI18N
@@ -125,6 +124,7 @@ final class TestRunner implements Runnable {
                 report(reportWriter, e.getKey().getName(), e.getValue().times, e.getValue().res);
             });
             report(reportWriter, "Whole parsing took", totalTimes, null);    //NOI18N
+            parser.report(opts);
         } catch (IOException ioe) {
             TestRunner.<Void,RuntimeException>sthrow(ioe);
         }
@@ -225,7 +225,6 @@ final class TestRunner implements Runnable {
         private final ParserOptions options;
         private int runs = 1;
         private boolean warmUp;
-        private PrintWriter reportWriter;
 
         private Builder(
                 final ParserImplementation parser,
@@ -234,7 +233,6 @@ final class TestRunner implements Runnable {
             this.parser = parser;
             this.options = options;
             this.source = source;
-            this.reportWriter = options.getProgressWriter();
         }
 
         Builder setRunsCount(int runs) {
@@ -247,21 +245,13 @@ final class TestRunner implements Runnable {
             return this;
         }
 
-        Builder setReport(File file) throws IOException {
-            this.reportWriter = file != null ?
-                    new PrintWriter(new OutputStreamWriter(new FileOutputStream(file, true))) :
-                    options.getProgressWriter();
-            return this;
-        }
-
         TestRunner build() {
             return new TestRunner(
                     parser,
                     source,
                     options,
                     runs,
-                    warmUp,
-                    reportWriter);
+                    warmUp);
         }
 
         static Builder newInstance(

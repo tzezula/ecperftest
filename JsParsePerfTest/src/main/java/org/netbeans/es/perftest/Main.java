@@ -125,6 +125,7 @@ public class Main {
             if (!parserOptions.isEmpty()) {
                 final Set<String> supportedOptions = parser.getOptions().keySet();
                 for (String parserOption : parserOptions) {
+                    parserOption = ParserOptions.splitParserArg(parserOption)[0];
                     if (!supportedOptions.contains(parserOption)) {
                         throw new IllegalArgumentException(parserOption);
                     }
@@ -137,11 +138,11 @@ public class Main {
                 .setPrintErrors(printErrors)
                 .setParserSpecificOptions(parserOptions)
                 .setProgress(progress)
+                .setReport(report)
                 .build();
         TestRunner.Builder.newInstance(parser, options, source)
                 .setRunsCount(runs == null ? 1 : runs)
                 .setWarmUp(warmUp)
-                .setReport(report)
                 .build()
                 .run();
     }
