@@ -416,9 +416,11 @@ conditionalExpression       : binaryExpression (PUNCTUATOR_TERNARY consequent=as
                             ;
 
 // 12.14 Assignment Operators
-assignmentExpression        : assignmentPattern PUNCTUATOR_ASSIGNMENT right=assignmentExpression
+assignmentExpression
+@leftfactor{objectLiteral}
+                            :
 //                            | leftHandSideExpression PUNCTUATOR_ASSIGNMENT right=assignmentExpression
-                            | leftHandSideExpression (PUNCTUATOR_ASSIGNMENT | PUNCTUATOR_DIVISION_ASSIGNMENT | PUNCTUATOR_PLUS_ASSIGNMENT | PUNCTUATOR_MINUS_ASSIGNMENT | PUNCTUATOR_MULTIPLICATION_ASSIGNMENT | PUNCTUATOR_MODULUS_ASSIGNMENT | PUNCTUATOR_LEFT_SHIFT_ARITHMETIC_ASSIGNMENT | PUNCTUATOR_RIGHT_SHIFT_ARITHMETIC_ASSIGNMENT | PUNCTUATOR_RIGHT_SHIFT_ASSIGNMENT | PUNCTUATOR_BITWISE_AND_ASSIGNMENT | PUNCTUATOR_BITWISE_OR_ASSIGNMENT | PUNCTUATOR_BITWISE_XOR_ASSIGNMENT) right=assignmentExpression
+                             leftHandSideExpression (PUNCTUATOR_ASSIGNMENT | PUNCTUATOR_DIVISION_ASSIGNMENT | PUNCTUATOR_PLUS_ASSIGNMENT | PUNCTUATOR_MINUS_ASSIGNMENT | PUNCTUATOR_MULTIPLICATION_ASSIGNMENT | PUNCTUATOR_MODULUS_ASSIGNMENT | PUNCTUATOR_LEFT_SHIFT_ARITHMETIC_ASSIGNMENT | PUNCTUATOR_RIGHT_SHIFT_ARITHMETIC_ASSIGNMENT | PUNCTUATOR_RIGHT_SHIFT_ASSIGNMENT | PUNCTUATOR_BITWISE_AND_ASSIGNMENT | PUNCTUATOR_BITWISE_OR_ASSIGNMENT | PUNCTUATOR_BITWISE_XOR_ASSIGNMENT) right=assignmentExpression
 //                            | leftHandSideExpression assignmentOperator right=assignmentExpression
                             | conditionalExpression
                             | arrowFunction
@@ -440,20 +442,20 @@ assignmentExpression        : assignmentPattern PUNCTUATOR_ASSIGNMENT right=assi
 
 // 12.14.5 Destructuring Assignment
 
-assignmentPattern       : objectAssignmentPattern
-                        | arrayAssignmentPattern
+assignmentPattern       : objectLiteral
+                        | arrayLiteral
                         ;
 
-objectAssignmentPattern : BRACKET_LEFT_CURLY (assignmentPropertyList PUNCTUATOR_COMMA?)? BRACKET_RIGHT_CURLY
+//objectAssignmentPattern : BRACKET_LEFT_CURLY (assignmentPropertyList PUNCTUATOR_COMMA?)? BRACKET_RIGHT_CURLY
 //                          BRACKET_LEFT_CURLY BRACKET_RIGHT_CURLY
 //                        | BRACKET_LEFT_CURLY assignmentPropertyList BRACKET_RIGHT_CURLY
 //                        | BRACKET_LEFT_CURLY assignmentPropertyList PUNCTUATOR_COMMA BRACKET_RIGHT_CURLY
-                        ;
+//                        ;
 
-arrayAssignmentPattern  : BRACKET_LEFT_BRACKET elision? assignmentRestElement? BRACKET_RIGHT_BRACKET
-                        | BRACKET_LEFT_BRACKET assignmentElementList BRACKET_RIGHT_BRACKET
-                        | BRACKET_LEFT_BRACKET assignmentElementList PUNCTUATOR_COMMA elision? assignmentRestElement? BRACKET_RIGHT_BRACKET
-                        ;
+//arrayAssignmentPattern  : BRACKET_LEFT_BRACKET elision? assignmentRestElement? BRACKET_RIGHT_BRACKET
+//                        | BRACKET_LEFT_BRACKET assignmentElementList BRACKET_RIGHT_BRACKET
+//                        | BRACKET_LEFT_BRACKET assignmentElementList PUNCTUATOR_COMMA elision? assignmentRestElement? BRACKET_RIGHT_BRACKET
+//                        ;
 
 assignmentPropertyList  : assignmentProperty (PUNCTUATOR_COMMA assignmentProperty)*
 //                        | assignmentPropertyList PUNCTUATOR_COMMA assignmentProperty
