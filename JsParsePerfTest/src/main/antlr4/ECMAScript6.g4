@@ -151,7 +151,7 @@ primaryExpression       : KEYWORD_THIS
                         | coverParenthesizedExpressionAndArrowParameterList
                         ;
 coverParenthesizedExpressionAndArrowParameterList :
-                          BRACKET_LEFT_PAREN (expressionSequence | (expressionSequence PUNCTUATOR_COMMA)? PUNCTUATOR_ELLIPSIS IDENTIFIER)? BRACKET_RIGHT_PAREN
+                          BRACKET_LEFT_PAREN (expressionSequence (PUNCTUATOR_COMMA PUNCTUATOR_ELLIPSIS IDENTIFIER)? | PUNCTUATOR_ELLIPSIS IDENTIFIER)? BRACKET_RIGHT_PAREN
                         ;
 
 // 12.2.4 Literals
