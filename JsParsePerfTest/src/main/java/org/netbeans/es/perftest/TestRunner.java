@@ -101,7 +101,7 @@ final class TestRunner implements Runnable {
                 progress(progressWriter, "Run: %d%n", 1+i);
                 final int fi = i;
                 totalTimes[i] = files(source)
-                        .limit(10)
+//                        .limit(3000)
                         .map((f)->{
                             final long t = parse(parser, f, opts, parserRes);
                             progress(progressWriter, "Parsing %s took: %dms success: %b.%n",   //NOI18N
