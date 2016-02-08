@@ -520,7 +520,7 @@ hoistableDeclaration    : functionDeclaration
 //                        ;
 block                   : BRACKET_LEFT_CURLY statementList? BRACKET_RIGHT_CURLY 
                         ;
-statementList           : (statement | declaration)+
+statementList           : (statement | lexicalDeclaration)+
 //                        | statementList statementListItem
                         ;
 //statementListItem       : statement 
@@ -585,7 +585,7 @@ emptyStatement          :   PUNCTUATOR_SEMICOLON
                         ;
 
 // 13.5 Expression Statement
-expressionStatement     : { _input.LA(1) != BRACKET_LEFT_CURLY && _input.LA(1) != KEYWORD_FUNCTION && _input.LA(1) != KEYWORD_CLASS && _input.LA(1) != RESERVED_LET }? expressionSequence eos
+expressionStatement     : expressionSequence eos
                         ;
 // TODO [lookahead ∉ {{, function, class, let [}] Expression[In, ?Yield] ;
 
@@ -787,7 +787,7 @@ sourceElements          : sourceElement+
                         ;
 
 sourceElement           : statement
-                        | declaration
+                        | lexicalDeclaration
                         | importDeclaration
                         | exportDeclaration
                         ;
