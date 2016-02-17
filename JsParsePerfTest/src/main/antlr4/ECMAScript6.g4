@@ -225,7 +225,6 @@ memberExpression
                         | memberExpression templateLiteral
                         | superProperty
                         | newTarget
-                        | KEYWORD_NEW memberExpression arguments
                         | primaryExpression
                         ;
 superProperty           : KEYWORD_SUPER  BRACKET_LEFT_BRACKET expressionSequence BRACKET_RIGHT_BRACKET
@@ -249,14 +248,15 @@ argumentList            : PUNCTUATOR_ELLIPSIS? assignmentExpression (PUNCTUATOR_
 //                        | argumentList PUNCTUATOR_COMMA PUNCTUATOR_ELLIPSIS assignmentExpression
                         ;
 
-newExpressionRest       : memberExpression
-                        | KEYWORD_NEW newExpressionRest
+constructor             : KEYWORD_NEW constructor arguments?
+                        | memberExpression
+
                         ;
 
 
 leftHandSideExpression  : memberExpression (arguments (callExpressionLRR)?)?    #callExpression
                         | KEYWORD_SUPER arguments (callExpressionLRR)?          #superCallExpression
-                        | KEYWORD_NEW newExpressionRest                         #newExpression
+                        | KEYWORD_NEW constructor arguments?                    #newExpression
                         ;
 
 // 12.4 Postfix Expressions
