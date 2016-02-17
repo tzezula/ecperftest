@@ -233,10 +233,10 @@ superProperty           : KEYWORD_SUPER  BRACKET_LEFT_BRACKET expressionSequence
 newTarget               : KEYWORD_NEW PUNCTUATOR_DOT ident=IDENTIFIER {TARGET_IDENT.equals($ident.text)}?
                         ;
 
-callExpressionLRR       : arguments (callExpressionLRR)?
-                        | BRACKET_LEFT_BRACKET expressionSequence BRACKET_RIGHT_BRACKET (callExpressionLRR)?
-                        | PUNCTUATOR_DOT IDENTIFIER (callExpressionLRR)?
-                        | templateLiteral   (callExpressionLRR)?
+callExpressionLRR       : arguments callExpressionLRR?
+                        | BRACKET_LEFT_BRACKET expressionSequence BRACKET_RIGHT_BRACKET callExpressionLRR?
+                        | PUNCTUATOR_DOT IDENTIFIER callExpressionLRR?
+                        | templateLiteral   callExpressionLRR?
                         ;
 
 arguments               : BRACKET_LEFT_PAREN argumentList? BRACKET_RIGHT_PAREN
@@ -254,8 +254,8 @@ constructor             : KEYWORD_NEW constructor arguments?
                         ;
 
 
-leftHandSideExpression  : memberExpression (arguments (callExpressionLRR)?)?    #callExpression
-                        | KEYWORD_SUPER arguments (callExpressionLRR)?          #superCallExpression
+leftHandSideExpression  : memberExpression (arguments callExpressionLRR?)?      #callExpression
+                        | KEYWORD_SUPER arguments callExpressionLRR?            #superCallExpression
                         | KEYWORD_NEW constructor arguments?                    #newExpression
                         ;
 
