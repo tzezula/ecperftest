@@ -52,7 +52,7 @@ import java.util.Map;
 public interface ParserImplementation {
     String getName();
     Map<String,String> getOptions();
-    void setUp(ParserOptions options);
+    void setUp(ParserOptions options) throws IOException;
     boolean parse(File file, ParserOptions options) throws IOException;
     void report(ParserOptions options);
 }

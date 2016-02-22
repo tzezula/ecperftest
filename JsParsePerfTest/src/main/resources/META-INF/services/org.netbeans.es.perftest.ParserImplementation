@@ -1,2 +1,3 @@
 org.netbeans.es.perftest.antlr.AntlrParser
+org.netbeans.es.perftest.esprima.EsprimaParser
 org.netbeans.es.perftest.nashorn.NashornParser
